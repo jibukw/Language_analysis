@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Sentra</title>
+
+<!-- PWA -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#c9a84c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sentra">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=JetBrains+Mono:wght@400;600&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+
+  :root {
+    --bg: #0f0e0c;
+    --surface: #1a1916;
+    --border: #2e2c28;
+    --accent: #c9a84c;
+    --accent2: #7eb8a4;
+    --text: #e8e4dc;
+    --text-dim: #8a8478;
+    --text-bright: #f5f0e8;
+    --red: #c97b6a;
+    --green: #7eb8a4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif KR', serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    flex-shrink: 0;
+  }
+
+  .brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    color: var(--accent);
+    letter-spacing: 0.03em;
+  }
+
+  .brand-sub {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 11px;
+    color: #4a4640;
+    letter-spacing: 0.02em;
+  }
+
+  .header-btns {
+    margin-left: auto;
+    display: flex;
+    gap: 7px;
+    align-items: center;
+  }
+
+  .hbtn {
+    padding: 5px 12px;
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  .hbtn:hover { border-color: var(--accent); color: var(--accent); }
+  .hbtn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  .key-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+
+  .key-status.set { color: var(--green); }
+  .key-status.unset { color: var(--red); }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 200px;
+    min-width: 200px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    transition: width 0.25s, min-width 0.25s;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .sidebar.hidden { width: 0; min-width: 0; border: none; }
+
+  .sidebar-header {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .new-btn {
+    padding: 3px 7px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .new-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .session-list { flex: 1; overflow-y: auto; padding: 6px 0; }
+  .session-list::-webkit-scrollbar { width: 3px; }
+  .session-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .session-item {
+    padding: 9px 12px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .session-item:hover { background: var(--surface); }
+  .session-item.active { border-left-color: var(--accent); background: var(--surface); }
+
+  .session-title-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .session-title {
+    font-size: 11px;
+    color: var(--text);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .session-title-input {
+    font-size: 11px;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    padding: 1px 4px;
+    width: 100%;
+    font-family: 'Noto Serif KR', serif;
+    outline: none;
+    display: none;
+  }
+
+  .session-rename-btn {
+    color: var(--text-dim);
+    font-size: 10px;
+    cursor: pointer;
+    padding: 1px 3px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.15s;
+    background: none;
+    border: none;
+  }
+
+  .session-item:hover .session-rename-btn { opacity: 1; }
+  .session-rename-btn:hover { color: var(--accent); }
+
+  .session-del {
+    color: var(--text-dim);
+    font-size: 11px;
+    cursor: pointer;
+    padding: 1px 3px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.15s;
+    background: none;
+    border: none;
+  }
+
+  .session-item:hover .session-del { opacity: 1; }
+  .session-del { opacity: 0.4; }
+  .session-del:hover { color: var(--red); opacity: 1; }
+
+  .session-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-top: 3px;
+  }
+
+  /* ── LEFT PANEL ── */
+  .left {
+    width: 280px;
+    min-width: 260px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex-shrink: 0;
+    transition: width 0.25s, min-width 0.25s;
+  }
+
+  .left::-webkit-scrollbar { width: 3px; }
+  .left::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .left.collapsed { width: 0; min-width: 0; border: none; }
+
+  .left.collapsed { width: 0; min-width: 0; border: none; }
+
+  /* 위쪽 텍스트 영역 */
+  .left-top {
+    display: flex;
+    flex-direction: column;
+    padding: 14px 14px 0;
+    gap: 8px;
+  }
+
+  .textarea-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .left label {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .clear-text-btn {
+    padding: 2px 7px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .clear-text-btn:hover { border-color: var(--red); color: var(--red); }
+
+  textarea {
+    width: 100%;
+    min-height: 240px;
+    height: 240px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.7;
+    padding: 10px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+
+  textarea:focus { border-color: var(--accent); }
+
+  /* 아래쪽 컨트롤 영역 */
+  .left-bottom {
+    flex-shrink: 0;
+    padding: 10px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .lang-row { display: flex; gap: 5px; flex-wrap: wrap; }
+
+  .lang-btn {
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .lang-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .lang-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+
+  .batch-row { display: flex; align-items: center; gap: 8px; }
+  .batch-row label { flex-shrink: 0; }
+  .batch-row input[type=range] { flex: 1; accent-color: var(--accent); }
+  .batch-val { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); width: 18px; }
+
+  .progress-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; display: none; }
+  .progress-bar-wrap.visible { display: block; }
+  .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.4s ease; }
+
+  .status { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dim); min-height: 13px; text-align: center; }
+  .status.running { color: var(--accent2); }
+  .status.error { color: var(--red); }
+  .status.done { color: var(--green); }
+
+  .btn-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .start-btn {
+    padding: 10px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 5px;
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  .start-btn:hover:not(:disabled) { opacity: 0.85; transform: translateY(-1px); }
+  .start-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+  .stop-btn {
+    padding: 8px;
+    background: transparent;
+    color: var(--red);
+    border: 1px solid var(--red);
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: none;
+  }
+
+  .stop-btn:hover { background: var(--red); color: var(--bg); }
+  .stop-btn.visible { display: block; }
+
+  /* CSV 버튼 그룹 */
+  .csv-group { display: none; flex-direction: column; gap: 5px; }
+  .csv-group.visible { display: flex; }
+
+  .csv-btn-all, .csv-btn-new {
+    padding: 8px;
+    background: transparent;
+    border: 1px solid var(--green);
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    color: var(--green);
+  }
+
+  .csv-btn-all:hover { background: var(--green); color: var(--bg); }
+
+  .csv-btn-new {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
+  .csv-btn-new:hover { background: var(--accent2); color: var(--bg); }
+
+  .vocab-count { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dim); text-align: center; display: none; }
+  .vocab-count.visible { display: block; }
+
+  /* ── RIGHT PANEL ── */
+  .right { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+  .output-header {
+    padding: 11px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .output-header span { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); }
+
+  .output-actions { display: flex; gap: 7px; }
+
+  .clear-btn {
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .clear-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .output { flex: 1; overflow-y: auto; padding: 22px 28px; scroll-behavior: smooth; }
+  .output::-webkit-scrollbar { width: 5px; }
+  .output::-webkit-scrollbar-track { background: transparent; }
+  .output::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .chunk {
+    margin-bottom: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+    animation: fadeIn 0.4s ease;
+    line-height: 1.85;
+    font-size: 14px;
+  }
+
+  .chunk:last-child { border-bottom: none; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .streaming-cursor::after { content: '▋'; color: var(--accent); animation: blink 0.7s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .chunk h3 { font-family: 'Playfair Display', serif; color: var(--accent); font-size: 15px; margin-bottom: 8px; margin-top: 18px; }
+  .chunk h3:first-child { margin-top: 0; }
+  .chunk h4 { font-family: 'JetBrains Mono', monospace; color: var(--accent2); font-size: 11px; margin-bottom: 6px; margin-top: 14px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .chunk p { margin-bottom: 8px; }
+  .chunk strong { color: var(--text-bright); }
+  .chunk em { color: var(--accent); font-style: italic; }
+  .chunk table { width: 100%; border-collapse: collapse; margin: 8px 0 14px; font-size: 13px; }
+  .chunk th { background: var(--surface); color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; padding: 6px 10px; text-align: left; border: 1px solid var(--border); }
+  .chunk td { padding: 6px 10px; border: 1px solid var(--border); vertical-align: top; line-height: 1.55; }
+  .chunk tr:hover td { background: rgba(201,168,76,0.04); }
+  .chunk blockquote { border-left: 2px solid var(--accent); padding: 4px 0 4px 12px; margin: 8px 0; color: var(--text-dim); font-size: 13px; }
+  .chunk code { font-family: 'JetBrains Mono', monospace; background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 1px 4px; font-size: 11px; color: var(--accent2); }
+  .chunk hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .chunk ul, .chunk ol { padding-left: 18px; margin-bottom: 8px; }
+  .chunk li { margin-bottom: 4px; }
+
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; color: var(--text-dim); }
+  .empty-state .icon { font-size: 28px; opacity: 0.2; }
+  .empty-state p { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.08em; }
+
+  /* ── MODALS ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.visible { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 26px;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+  }
+
+  .modal h2 { font-family: 'Playfair Display', serif; color: var(--accent); font-size: 16px; }
+  .modal p { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dim); line-height: 1.6; }
+  .modal a { color: var(--accent2); text-decoration: none; }
+
+  .modal-input-row { display: flex; gap: 6px; }
+
+  .modal-input-row input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 8px 10px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .modal-input-row input:focus { border-color: var(--accent); }
+
+  .modal-eye {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text-dim);
+    font-size: 12px;
+    padding: 5px 8px;
+    cursor: pointer;
+  }
+
+  .modal-save {
+    padding: 9px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .modal-save:hover { opacity: 0.85; }
+
+  .modal-cancel {
+    padding: 7px;
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  .modal-cancel:hover { border-color: var(--red); color: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay" id="apiModal">
+  <div class="modal">
+    <h2>🔑 API 키 설정</h2>
+    <p>
+      <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>에서 발급<br>
+      한 번 저장하면 브라우저를 닫아도 유지됩니다.
+    </p>
+    <div class="modal-input-row">
+      <input type="password" id="modalApiKey" placeholder="sk-ant-api03-...">
+      <button class="modal-eye" onclick="toggleModalKey()">👁</button>
+    </div>
+    <button class="modal-save" onclick="saveApiKey()">저장</button>
+    <button class="modal-cancel" onclick="closeModal('apiModal')">취소</button>
+  </div>
+</div>
+
+<!-- RENAME MODAL -->
+<div class="modal-overlay" id="renameModal">
+  <div class="modal">
+    <h2>이름 변경</h2>
+    <div class="modal-input-row">
+      <input type="text" id="renameInput" placeholder="새 이름 입력..." maxlength="40">
+    </div>
+    <button class="modal-save" onclick="confirmRename()">확인</button>
+    <button class="modal-cancel" onclick="closeModal('renameModal')">취소</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="brand">
+    <span class="brand-name">Sentra</span>
+    <span class="brand-sub">(My Language Trip)</span>
+  </div>
+  <div class="header-btns">
+    <div class="key-status unset" id="keyStatus">키 미설정</div>
+    <button class="hbtn" onclick="openModal('apiModal')">🔑 API</button>
+    <button class="hbtn" id="sidebarBtn" onclick="toggleSidebar()">☰ 목록</button>
+    <button class="hbtn" id="expandBtn" onclick="toggleExpand()">⛶ 확대</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      저장된 분석
+      <button class="new-btn" onclick="newSession()">+ 새 분석</button>
+    </div>
+    <div class="session-list" id="sessionList"></div>
+  </div>
+
+  <!-- LEFT PANEL -->
+  <div class="left" id="leftPanel">
+
+    <!-- 위: 텍스트 입력 (flex:1 으로 늘어남) -->
+    <div class="left-top">
+      <div class="textarea-header">
+        <label>분석할 텍스트</label>
+        <button class="clear-text-btn" onclick="clearTextarea()">✕ 지우기</button>
+      </div>
+      <textarea id="inputText" placeholder="여기에 텍스트를 붙여넣으세요...&#10;영어, 일본어, 중국어, 스페인어 가능&#10;&#10;※ 기존 분석에 이어서 추가하려면&#10;새 문장만 입력하세요."></textarea>
+    </div>
+
+    <!-- 아래: 컨트롤 (고정) -->
+    <div class="left-bottom">
+      <div class="lang-row">
+        <button class="lang-btn active" data-lang="영어">🇺🇸 EN</button>
+        <button class="lang-btn" data-lang="일본어">🇯🇵 JP</button>
+        <button class="lang-btn" data-lang="중국어">🇨🇳 CN</button>
+        <button class="lang-btn" data-lang="스페인어">🇪🇸 ES</button>
+      </div>
+
+      <div class="batch-row">
+        <label>묶음</label>
+        <input type="range" id="batchSize" min="3" max="15" value="8" step="1">
+        <span class="batch-val" id="batchVal">8</span>
+      </div>
+
+      <div class="progress-bar-wrap" id="progressWrap">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
+      <div class="status" id="status">준비됨</div>
+
+      <div class="btn-group">
+        <button class="start-btn" id="startBtn" onclick="startAnalysis()">분석 시작</button>
+        <button class="stop-btn" id="stopBtn" onclick="stopAnalysis()">⏹ 중단</button>
+        <div class="csv-group" id="csvGroup">
+          <button class="csv-btn-all" onclick="downloadCSV('all')">⬇ 전체 단어장 CSV</button>
+          <button class="csv-btn-new" onclick="downloadCSV('new')">⬇ 추가분 단어장 CSV</button>
+        </div>
+        <div class="vocab-count" id="vocabCount"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right">
+    <div class="output-header">
+      <span id="outputLabel">결과</span>
+      <div class="output-actions">
+        <button class="clear-btn" onclick="clearOutput()">초기화</button>
+      </div>
+    </div>
+    <div class="output" id="output">
+      <div class="empty-state" id="emptyState">
+        <div class="icon">◈</div>
+        <p>텍스트를 입력하고 분석을 시작하세요</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────
+let sentences = [];
+let currentBatch = 0;
+let batchSize = 8;
+let selectedLang = '영어';
+let totalSentences = 0;
+let abortFlag = false;
+let isRunning = false;
+let vocabList = [];        // 전체 누적
+let vocabListNew = [];     // 이번 분석에서 추가된 것만
+let continuationOffset = 0;
+let isExpanded = false;
+let isSidebarVisible = true;
+let sessions = [];
+let currentSessionId = null;
+let renamingSessionId = null;
+
+// ── INIT ───────────────────────────────────────────────
+window.addEventListener('load', () => {
+  loadApiKey();
+  loadSessions();
+  renderSessionList();
+  if (sessions.length === 0) {
+    newSession();
+  } else {
+    loadSession(sessions[sessions.length - 1].id);
+  }
+});
+
+// ── API KEY ────────────────────────────────────────────
+function loadApiKey() {
+  const saved = localStorage.getItem('sentra_api_key');
+  if (saved) {
+    document.getElementById('modalApiKey').value = saved;
+    updateKeyStatus(true);
+  }
+}
+
+function getApiKey() {
+  return localStorage.getItem('sentra_api_key') || '';
+}
+
+function saveApiKey() {
+  const val = document.getElementById('modalApiKey').value.trim();
+  if (!val) { alert('API 키를 입력해주세요.'); return; }
+  localStorage.setItem('sentra_api_key', val);
+  updateKeyStatus(true);
+  closeModal('apiModal');
+}
+
+function updateKeyStatus(isSet) {
+  const el = document.getElementById('keyStatus');
+  el.textContent = isSet ? '키 설정됨' : '키 미설정';
+  el.className = 'key-status ' + (isSet ? 'set' : 'unset');
+}
+
+function toggleModalKey() {
+  const inp = document.getElementById('modalApiKey');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+// ── MODALS ─────────────────────────────────────────────
+function openModal(id) {
+  if (id === 'apiModal') {
+    const saved = localStorage.getItem('sentra_api_key');
+    if (saved) document.getElementById('modalApiKey').value = saved;
+  }
+  document.getElementById(id).classList.add('visible');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('visible');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('visible');
+  });
+});
+
+// ── RENAME SESSION ─────────────────────────────────────
+function startRename(id, e) {
+  e.stopPropagation();
+  renamingSessionId = id;
+  const session = sessions.find(s => s.id === id);
+  if (!session) return;
+  document.getElementById('renameInput').value = session.title;
+  openModal('renameModal');
+  setTimeout(() => document.getElementById('renameInput').select(), 50);
+}
+
+function confirmRename() {
+  const val = document.getElementById('renameInput').value.trim();
+  if (!val) return;
+  const session = sessions.find(s => s.id === renamingSessionId);
+  if (session) {
+    session.title = val.substring(0, 40);
+    saveSessions();
+    renderSessionList();
+  }
+  closeModal('renameModal');
+}
+
+document.getElementById('renameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmRename();
+  if (e.key === 'Escape') closeModal('renameModal');
+});
+
+// ── SESSIONS ───────────────────────────────────────────
+function loadSessions() {
+  try { sessions = JSON.parse(localStorage.getItem('sentra_sessions') || '[]'); }
+  catch { sessions = []; }
+}
+
+function saveSessions() {
+  localStorage.setItem('sentra_sessions', JSON.stringify(sessions));
+}
+
+function newSession() {
+  const id = Date.now().toString();
+  sessions.push({ id, title: '새 분석', lang: '영어', date: new Date().toLocaleDateString('ko-KR'), html: '', vocabList: [], sentenceCount: 0, inputText: '' });
+  saveSessions();
+  loadSession(id);
+  renderSessionList();
+  // 상태 초기화
+  setStatus('준비됨');
+  document.getElementById('progressWrap').classList.remove('visible');
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('outputLabel').textContent = '결과';
+}
+
+function loadSession(id) {
+  currentSessionId = id;
+  const s = sessions.find(s => s.id === id);
+  if (!s) return;
+
+  selectedLang = s.lang || '영어';
+  vocabList = s.vocabList || [];
+  vocabListNew = [];
+  continuationOffset = s.sentenceCount || 0;
+
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === selectedLang);
+  });
+
+  const output = document.getElementById('output');
+  output.innerHTML = s.html || '<div class="empty-state" id="emptyState"><div class="icon">◈</div><p>텍스트를 입력하고 분석을 시작하세요</p></div>';
+
+  // 텍스트 상자 복원 (새 분석이면 빈칸, 기존 분석이면 저장된 텍스트)
+  document.getElementById('inputText').value = s.inputText || '';
+
+  updateVocabUI();
+  if (s.sentenceCount > 0) {
+    document.getElementById('outputLabel').textContent = `결과 — ${s.sentenceCount}문장`;
+    setProgress(s.sentenceCount, s.sentenceCount);
+  } else {
+    document.getElementById('outputLabel').textContent = '결과';
+  }
+  renderSessionList();
+}
+
+function updateCurrentSession() {
+  const s = sessions.find(s => s.id === currentSessionId);
+  if (!s) return;
+  s.html = document.getElementById('output').innerHTML;
+  s.vocabList = vocabList;
+  s.sentenceCount = continuationOffset;
+  s.lang = selectedLang;
+  s.inputText = document.getElementById('inputText').value;
+  saveSessions();
+}
+
+function updateSessionTitle(title) {
+  const s = sessions.find(s => s.id === currentSessionId);
+  if (!s) return;
+  s.title = title.substring(0, 30);
+  saveSessions();
+  renderSessionList();
+}
+
+function deleteSession(id, e) {
+  e.stopPropagation();
+  const session = sessions.find(s => s.id === id);
+  const title = session ? session.title : '이 분석';
+  if (!confirm(`"${title}"을 삭제할까요?`)) return;
+  sessions = sessions.filter(s => s.id !== id);
+  saveSessions();
+  if (currentSessionId === id) {
+    sessions.length > 0 ? loadSession(sessions[sessions.length - 1].id) : newSession();
+  }
+  renderSessionList();
+}
+
+function renderSessionList() {
+  const list = document.getElementById('sessionList');
+  list.innerHTML = '';
+  [...sessions].reverse().forEach(s => {
+    const item = document.createElement('div');
+    item.className = 'session-item' + (s.id === currentSessionId ? ' active' : '');
+    item.innerHTML = `
+      <div class="session-title-row">
+        <span class="session-title">${s.title}</span>
+        <button class="session-rename-btn" onclick="startRename('${s.id}', event)" title="이름 변경">✎</button>
+        <button class="session-del" onclick="deleteSession('${s.id}', event)" title="삭제">✕</button>
+      </div>
+      <div class="session-meta">${s.date} · ${s.sentenceCount}문장</div>
+    `;
+    item.addEventListener('click', () => loadSession(s.id));
+    list.appendChild(item);
+  });
+}
+
+// ── UI TOGGLES ─────────────────────────────────────────
+function toggleExpand() {
+  isExpanded = !isExpanded;
+  document.getElementById('leftPanel').classList.toggle('collapsed', isExpanded);
+  document.getElementById('expandBtn').textContent = isExpanded ? '◧ 축소' : '⛶ 확대';
+  document.getElementById('expandBtn').classList.toggle('active', isExpanded);
+}
+
+function toggleSidebar() {
+  isSidebarVisible = !isSidebarVisible;
+  document.getElementById('sidebar').classList.toggle('hidden', !isSidebarVisible);
+  document.getElementById('sidebarBtn').classList.toggle('active', isSidebarVisible);
+}
+
+function clearTextarea() {
+  document.getElementById('inputText').value = '';
+  document.getElementById('inputText').focus();
+}
+
+// ── LANG BUTTONS ───────────────────────────────────────
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedLang = btn.dataset.lang;
+  });
+});
+
+// ── BATCH SLIDER ───────────────────────────────────────
+document.getElementById('batchSize').addEventListener('input', function() {
+  batchSize = parseInt(this.value);
+  document.getElementById('batchVal').textContent = batchSize;
+});
+
+// ── SENTENCE SPLITTER ──────────────────────────────────
+function splitSentences(text) {
+  text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+  const abbrevs = [
+    'U\\.S\\.A\\.','U\\.S\\.','U\\.K\\.','U\\.N\\.','E\\.U\\.',
+    'Mr\\.','Mrs\\.','Ms\\.','Dr\\.','Prof\\.','Sr\\.','Jr\\.',
+    'vs\\.','etc\\.','e\\.g\\.','i\\.e\\.','cf\\.','approx\\.',
+    'Jan\\.','Feb\\.','Mar\\.','Apr\\.','Aug\\.','Sep\\.','Oct\\.','Nov\\.','Dec\\.',
+    'St\\.','Ave\\.','Blvd\\.','dept\\.','govt\\.','No\\.','Vol\\.',
+    'p\\.m\\.','a\\.m\\.','Ph\\.D\\.','B\\.A\\.','M\\.A\\.'
+  ];
+  let temp = text;
+  const phMap = {};
+  abbrevs.forEach((abbr, i) => {
+    const key = `\x00A${i}\x00`;
+    temp = temp.replace(new RegExp(abbr, 'gi'), key);
+    phMap[key] = abbr.replace(/\\\\/g, '');
+  });
+  temp = temp.replace(/(\d+)\.(\d+)/g, '$1\x00D\x002');
+  const parts = temp.split(/(?<=[.!?])\s+(?=[A-Z"'(])/);
+  return parts.map(p => {
+    let r = p;
+    Object.entries(phMap).forEach(([k, v]) => { r = r.split(k).join(v); });
+    r = r.replace(/\x00D\x00/g, '.');
+    return r.trim();
+  }).filter(s => s.length > 1);
+}
+
+// ── PROMPT BUILDER ─────────────────────────────────────
+function buildPrompt(batch, startIdx, lang, totalCount) {
+  const numbered = batch.map((s, i) => `Sentence ${startIdx + i + 1}: ${s}`).join('\n');
+  const langLabel = lang === '자동감지' ? '자동으로 감지' : lang;
+  let langExtra = '';
+  if (lang === '일본어') langExtra = '\n- 구문 분석 표에 후리가나(ふりがな) 열을 추가할 것.';
+  if (lang === '중국어') langExtra = '\n- 구문 분석 표에 병음(拼音) 열을 반드시 추가할 것.';
+  if (lang === '스페인어') langExtra = '\n- 구문 분석 마지막에 대응하는 영어 문장을 보여주고, 스페인어 어순 그대로 영어 단어로 표현한 문장도 함께 보여줄 것.';
+
+  return `너는 외국어 문장을 한국인 학습자를 위해 분석하는 최고 수준의 언어 전문가다.
+분석 언어: ${langLabel} | 이 배치: ${batch.length}개 문장 (전체 ${totalCount}개 중)
+
+아래 문장들을 Sentence 번호 순서대로 빠짐없이 분석하라.
+
+[분석 형식 — 반드시 아래 순서와 형식을 정확히 따를 것]
+
+### Sentence N
+**[문장 전체]**
+
+**자연스럽고 완전한 한국어 번역** (단순 직역이 아닌 문맥에 맞는 번역)
+
+**구문 분석**
+
+| 구성 요소 | 품사/역할 | 의미 |
+|---|---|---|
+| 구성요소 | 품사와 문법적 역할 | 한국어 의미 |
+
+[구문 분석 주의사항]
+- 모든 구성요소 빠짐없이 분석
+- 종속절/관계절/분사구문은 절 구조 명시
+- 시제·조동사·수동태의 뉘앙스 설명
+- 특이한 어순/생략/도치 있으면 ※ 메모로 설명
+- 단편 문장(fragment)·비표준 표현은 명시
+${langExtra}
+
+**🔑 어휘 포인트**
+
+어려운 단어/구문/표현을 아래 두 형식으로 작성:
+
+각 표현은 아래 두 가지를 함께 작성:
+• **표현**: 뜻 + 뉘앙스/용법/문화적 배경 + 비슷한 표현과의 차이 등 부가설명. 관용구는 유래나 실제 쓰임새도 설명.
+🔑 CSV: 표현 | 뜻(간단히) | 예시문 / 한국어번역
+
+[어휘 포인트 기준]
+- 단어, 관용구, 구동사, 문법 구조, 문화적 표현 모두 포함
+- 한 문장에 여러 개라도 전부 빠짐없이 작성
+
+분석할 문장:
+${numbered}`;
+}
+
+// ── VOCAB EXTRACTOR ────────────────────────────────────
+function extractVocab(text, lang) {
+  const lines = text.split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith('🔑 CSV:')) continue;
+    const content = trimmed.replace('🔑 CSV:', '').trim();
+    const parts = content.split('|').map(p => p.trim());
+    if (parts.length < 2) continue;
+    const expression = parts[0] || '';
+    const meaning = parts[1] || '';
+    const example = parts[2] || '';
+    if (!expression || !meaning) continue;
+    let phonetics = '';
+    if (lang === '일본어' || lang === '중국어') {
+      const match = expression.match(/[（(]([^）)]+)[）)]/);
+      phonetics = match ? match[1] : '';
+    }
+    const entry = [expression, phonetics, meaning, example];
+    vocabList.push(entry);
+    vocabListNew.push(entry);
+  }
+  updateVocabUI();
+}
+
+function updateVocabUI() {
+  const countEl = document.getElementById('vocabCount');
+  const csvGroup = document.getElementById('csvGroup');
+  if (vocabList.length > 0) {
+    countEl.textContent = `🔑 표현 ${vocabList.length}개 수집됨`;
+    countEl.classList.add('visible');
+    csvGroup.classList.add('visible');
+    // 추가분이 있을 때만 추가분 버튼 표시
+    document.querySelector('.csv-btn-new').style.display = vocabListNew.length > 0 ? 'block' : 'none';
+  } else {
+    countEl.classList.remove('visible');
+    csvGroup.classList.remove('visible');
+  }
+}
+
+// ── CSV DOWNLOAD ───────────────────────────────────────
+function downloadCSV(type) {
+  const list = type === 'new' ? vocabListNew : vocabList;
+  if (list.length === 0) { alert('다운로드할 표현이 없습니다.'); return; }
+
+  let bHeader = '빈칸';
+  if (selectedLang === '일본어') bHeader = '후리가나';
+  if (selectedLang === '중국어') bHeader = '병음';
+
+  const header = ['표현', bHeader, '뜻', '예시 / 한국어 번역'];
+  const rows = [header, ...list];
+  const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = type === 'new' ? '단어장_추가분.csv' : '단어장_전체.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── MARKDOWN RENDERER ──────────────────────────────────
+function renderMarkdown(md) {
+  md = md.replace(/^🔑 CSV:.*$/gm, '');
+  return md
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/^---+$/gm, '<hr>')
+    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+    .replace(/(\|.+\|\n)+/g, tableBlock => {
+      const rows = tableBlock.trim().split('\n');
+      let html = '<table>';
+      rows.forEach((row, idx) => {
+        const cells = row.split('|').filter(c => c.trim() !== '');
+        if (idx === 0) html += '<tr>' + cells.map(c => `<th>${c.trim()}</th>`).join('') + '</tr>';
+        else if (idx === 1 && cells.every(c => /^[-: ]+$/.test(c))) {}
+        else html += '<tr>' + cells.map(c => `<td>${c.trim()}</td>`).join('') + '</tr>';
+      });
+      return html + '</table>';
+    })
+    .replace(/^• (.+)$/gm, '<li>$1</li>')
+    .replace(/^[\-\*] (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`)
+    .replace(/^(?!<[htublc])(.+)$/gm, '<p>$1</p>')
+    .replace(/<p>\s*<\/p>/g, '')
+    .replace(/<p><strong>원문:<\/strong>/g, '<p><strong>')
+    .replace(/<strong>한국어 해석:<\/strong>/g, '<strong>')
+    .replace(/<p>원문:/g, '<p>')
+    .replace(/<p>한국어 해석:/g, '<p>');
+}
+
+// ── UI HELPERS ─────────────────────────────────────────
+function setStatus(msg, cls = '') {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + cls;
+}
+
+function setProgress(done, total) {
+  const pct = total > 0 ? (done / total) * 100 : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  if (total > 0) document.getElementById('outputLabel').textContent = `결과 — ${done} / ${total} 문장`;
+}
+
+function clearOutput() {
+  document.getElementById('output').innerHTML =
+    '<div class="empty-state" id="emptyState"><div class="icon">◈</div><p>텍스트를 입력하고 분석을 시작하세요</p></div>';
+  setProgress(0, 0);
+  document.getElementById('outputLabel').textContent = '결과';
+  vocabList = [];
+  vocabListNew = [];
+  continuationOffset = 0;
+  updateVocabUI();
+  setStatus('준비됨');
+  document.getElementById('progressWrap').classList.remove('visible');
+  updateCurrentSession();
+}
+
+function showError(msg) {
+  setStatus(msg, 'error');
+  const div = document.createElement('div');
+  div.className = 'chunk';
+  div.innerHTML = `<p style="color:var(--red);font-family:JetBrains Mono,monospace;font-size:13px;">❌ ${msg}</p>`;
+  document.getElementById('output').appendChild(div);
+  scrollToBottom();
+}
+
+function appendChunk(md) {
+  const div = document.createElement('div');
+  div.className = 'chunk';
+  div.innerHTML = renderMarkdown(md);
+  document.getElementById('output').appendChild(div);
+  scrollToBottom();
+}
+
+function stopAnalysis() {
+  abortFlag = true;
+  isRunning = false;
+  setStatus('중단됨', 'error');
+  document.getElementById('stopBtn').classList.remove('visible');
+  document.getElementById('startBtn').disabled = false;
+}
+
+function scrollToBottom() {
+  const out = document.getElementById('output');
+  out.scrollTop = out.scrollHeight;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ── MAIN ANALYSIS ──────────────────────────────────────
+async function startAnalysis() {
+  const text = document.getElementById('inputText').value.trim();
+  if (!text) { setStatus('텍스트를 입력해주세요.', 'error'); return; }
+  if (isRunning) return;
+  if (!getApiKey()) { openModal('apiModal'); return; }
+
+  sentences = splitSentences(text);
+  totalSentences = sentences.length;
+  if (totalSentences === 0) { setStatus('문장을 찾을 수 없습니다.', 'error'); return; }
+
+  currentBatch = 0;
+  abortFlag = false;
+  isRunning = true;
+  vocabListNew = []; // 이번 분석 추가분 초기화
+
+  const emptyEl = document.getElementById('emptyState');
+  if (emptyEl) emptyEl.remove();
+
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('stopBtn').classList.add('visible');
+  document.getElementById('progressWrap').classList.add('visible');
+
+  const globalStart = continuationOffset;
+  const globalTotal = continuationOffset + totalSentences;
+
+  if (continuationOffset === 0) {
+    updateSessionTitle(text.substring(0, 25) + (text.length > 25 ? '...' : ''));
+  }
+
+  appendChunk(`## ${continuationOffset > 0 ? '이어서 분석' : '분석 시작'} — ${totalSentences}개 문장 (${globalStart + 1}번~${globalTotal}번)`);
+  setProgress(continuationOffset, globalTotal);
+
+  await runBatches(globalStart, globalTotal);
+}
+
+async function runBatches(globalStart, globalTotal) {
+  while (currentBatch * batchSize < totalSentences && !abortFlag) {
+    const start = currentBatch * batchSize;
+    const end = Math.min(start + batchSize, totalSentences);
+    const batch = sentences.slice(start, end);
+    const offsetStart = globalStart + start;
+
+    setStatus(`분석 중... (${globalStart + end}/${globalTotal})`, 'running');
+
+    const prompt = buildPrompt(batch, offsetStart, selectedLang, globalTotal);
+    const chunkDiv = document.createElement('div');
+    chunkDiv.className = 'chunk streaming-cursor';
+    document.getElementById('output').appendChild(chunkDiv);
+    scrollToBottom();
+
+    const { success, fullText } = await callApi(prompt, chunkDiv);
+    if (!success) break;
+
+    extractVocab(fullText, selectedLang);
+    chunkDiv.classList.remove('streaming-cursor');
+    currentBatch++;
+    continuationOffset = globalStart + Math.min(currentBatch * batchSize, totalSentences);
+    setProgress(continuationOffset, globalTotal);
+    scrollToBottom();
+    updateCurrentSession();
+
+    if (currentBatch * batchSize < totalSentences && !abortFlag) await sleep(700);
+  }
+
+  if (!abortFlag) {
+    continuationOffset = globalStart + totalSentences;
+    setStatus(`완료! 총 ${continuationOffset}개 문장 분석`, 'done');
+    updateVocabUI();
+    updateCurrentSession();
+    renderSessionList();
+  } else {
+    setStatus('중단됨', 'error');
+  }
+
+  isRunning = false;
+  document.getElementById('startBtn').disabled = false;
+  document.getElementById('stopBtn').classList.remove('visible');
+}
+
+async function callApi(prompt, divEl) {
+  let fullText = '';
+  try {
+    const headers = {
+      'Content-Type': 'application/json',
+      'x-api-key': getApiKey(),
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    };
+
+    divEl.innerHTML = '<p style="color:var(--text-dim);font-family:JetBrains Mono,monospace;font-size:12px;">⏳ 분석 중...</p>';
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 6000,
+        stream: false,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      let errMsg = 'HTTP ' + res.status;
+      try { const err = await res.json(); errMsg = err.error?.message || errMsg; } catch {}
+      showError('API 오류: ' + errMsg);
+      return { success: false, fullText: '' };
+    }
+
+    const data = await res.json();
+    fullText = data?.content?.[0]?.text || '';
+
+    if (!fullText) {
+      showError('응답이 비어있습니다.');
+      return { success: false, fullText: '' };
+    }
+
+    divEl.innerHTML = renderMarkdown(fullText);
+    scrollToBottom();
+    return { success: true, fullText };
+
+  } catch (e) {
+    showError('네트워크 오류: ' + e.message);
+    return { success: false, fullText };
+  }
+}
+</script>
+
+<script>
+// PWA 서비스워커 등록
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('Sentra SW 등록됨:', reg.scope))
+      .catch(err => console.log('SW 등록 실패:', err));
+  });
+}
+</script>
+</body>
+</html>

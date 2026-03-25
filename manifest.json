@@ -1,0 +1,26 @@
+{
+  "name": "Sentra - My Language Trip",
+  "short_name": "Sentra",
+  "description": "외국어 문장 구문 분석 및 단어장 학습 앱",
+  "start_url": "./grammar-analyzer.html",
+  "display": "standalone",
+  "background_color": "#0f0e0c",
+  "theme_color": "#c9a84c",
+  "orientation": "any",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "utilities"]
+}
